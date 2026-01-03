@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Connection</title>
+</head>
+<body>
+    <h1>Testing Next.js Server</h1>
+    <div id="result"></div>
+    
+    <script>
+        // Test if the Next.js server is responding
+        fetch('http://localhost:3001/')
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = 
+                        '<p style="color: green;">✅ Server is running! Next.js is working.</p>' +
+                        '<p><a href="http://localhost:3001/">Visit Main Site</a></p>' +
+                        '<p><a href="http://localhost:3001/admin/login">Visit Admin Login</a></p>';
+                } else {
+                    document.getElementById('result').innerHTML = 
+                        '<p style="color: orange;">⚠️ Server responding but with errors</p>';
+                }
+            })
+            .catch(error => {
+                document.getElementById('result').innerHTML = 
+                    '<p style="color: red;">❌ Server not accessible: ' + error.message + '</p>' +
+                    '<p>Make sure the Next.js server is running on port 3001</p>';
+            });
+    </script>
+</body>
+</html>
