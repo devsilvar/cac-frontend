@@ -89,8 +89,8 @@ const AdminDashboard: React.FC = () => {
         />
         <StatCard
           label="Revenue"
-          value={`$${overview?.revenue || 0}`}
-          subtitle={`$${overview?.revenueThisMonth || 0} this month`}
+          value={`₦${((overview?.revenue || 0) / 100).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+          subtitle={`₦${((overview?.revenueThisMonth || 0) / 100).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} this month`}
           icon={KeyIcon}
           color="orange"
         />
@@ -203,6 +203,21 @@ const StatCard: React.FC<{
     orange: 'bg-orange-100 text-orange-600',
   }
 
+  // Format large numbers to prevent overflow
+  const formatValue = (val: number | string): string => {
+    if (typeof val === 'string') return val
+    
+    // For numbers >= 1 million, show in compact format
+    if (val >= 1000000) {
+      return `${(val / 1000000).toFixed(1)}M`
+    }
+    // For numbers >= 10,000, show in compact format
+    if (val >= 10000) {
+      return `${(val / 1000).toFixed(1)}K`
+    }
+    return val.toLocaleString()
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -216,15 +231,15 @@ const StatCard: React.FC<{
               <Icon className="h-6 w-6" />
             </div>
           </div>
-          <div className="ml-5 w-0 flex-1">
+          <div className="ml-5 w-0 flex-1 min-w-0">
             <dl>
               <dt className="text-sm font-medium text-gray-500 truncate">{label}</dt>
-              <dd className="flex items-baseline">
-                <div className="text-2xl font-semibold text-gray-900">
-                  {typeof value === 'number' ? value.toLocaleString() : value}
+              <dd className="flex items-baseline flex-wrap gap-1">
+                <div className="text-2xl font-semibold text-gray-900 break-words">
+                  {typeof value === 'number' ? formatValue(value) : value}
                 </div>
                 {change && trend && (
-                  <div className={`ml-2 flex items-baseline text-sm font-semibold ${
+                  <div className={`flex items-baseline text-sm font-semibold whitespace-nowrap ${
                     trend === 'up' ? 'text-green-600' : 'text-red-600'
                   }`}>
                     {trend === 'up' ? (
@@ -237,7 +252,7 @@ const StatCard: React.FC<{
                 )}
               </dd>
               {subtitle && (
-                <dd className="text-xs text-gray-500 mt-1">{subtitle}</dd>
+                <dd className="text-xs text-gray-500 mt-1 truncate" title={subtitle}>{subtitle}</dd>
               )}
             </dl>
           </div>

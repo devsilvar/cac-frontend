@@ -7,6 +7,7 @@ export interface CustomerUser {
   phoneNumber?: string | null
   plan: string
   status: string
+  verificationStatus?: string
 }
 
 export interface AuthResult {
@@ -55,8 +56,16 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
       })
       if (!res.ok) return
       const data = await res.json()
-      setCustomer(data?.data ?? data)
-    } catch {}
+      const customerData = data?.data ?? data
+      console.log('[CustomerAuth] loadMe response:', {
+        verificationStatus: customerData?.verificationStatus,
+        email: customerData?.email,
+        id: customerData?.id
+      })
+      setCustomer(customerData)
+    } catch (e) {
+      console.error('[CustomerAuth] loadMe error:', e)
+    }
   }
 
   const signup: CustomerAuthContextValue['signup'] = async (payload) => {
@@ -80,14 +89,9 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
       if (!res.ok || j?.success === false) return { ok: false, message }
 
-      const t = j?.token || j?.data?.token
-      if (!t) return { ok: false, message: message || 'Signup succeeded but no token returned' }
-
-      setToken(t)
-      localStorage.setItem('customerToken', t)
-      setIsAuthenticated(true)
-      await loadMe(t)
-      return { ok: true }
+      // Signup successful - DO NOT auto-login
+      // User should be redirected to login page to sign in manually
+      return { ok: true, message: 'Account created successfully. Please log in.' }
     } catch (e) {
       return { ok: false, message: e instanceof Error ? e.message : 'Signup failed' }
     } finally {

@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import { NavLink, useNavigate, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   LayoutDashboard, 
@@ -14,9 +14,12 @@ import {
   ChevronRight,
   Settings,
   Bell,
-  CreditCard
+  CreditCard,
+  Wallet,
+  Plus
 } from 'lucide-react'
 import { useCustomerAuth } from '../context/CustomerAuthContext'
+import { walletService, WalletBalance } from '../services/wallet.service'
 
 interface CustomerDashboardLayoutProps {
   children: React.ReactNode
@@ -24,8 +27,25 @@ interface CustomerDashboardLayoutProps {
 
 const CustomerDashboardLayout: React.FC<CustomerDashboardLayoutProps> = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [walletBalance, setWalletBalance] = useState<WalletBalance | null>(null)
   const { customer, logout } = useCustomerAuth()
   const navigate = useNavigate()
+
+  // Fetch wallet balance
+  useEffect(() => {
+    const fetchBalance = async () => {
+      try {
+        const balance = await walletService.getBalance()
+        setWalletBalance(balance)
+      } catch (err) {
+        console.error('Failed to fetch wallet balance:', err)
+      }
+    }
+    fetchBalance()
+    // Refresh balance every 30 seconds
+    const interval = setInterval(fetchBalance, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   const handleLogout = () => {
     logout()
@@ -34,6 +54,7 @@ const CustomerDashboardLayout: React.FC<CustomerDashboardLayoutProps> = ({ child
 
   const navItems = [
     { to: '/customer/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { to: '/customer/wallet', label: 'Wallet', icon: CreditCard },
     { to: '/customer/api-keys', label: 'API Keys', icon: Key },
     { to: '/customer/usage', label: 'Usage & Analytics', icon: BarChart3 },
     { to: '/customer/me', label: 'Profile', icon: User },
@@ -46,18 +67,18 @@ const CustomerDashboardLayout: React.FC<CustomerDashboardLayoutProps> = ({ child
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Mobile sidebar overlay */}
-      <AnimatePresence>
-        {sidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setSidebarOpen(false)}
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          />
-        )}
-      </AnimatePresence>
+        {/* Mobile sidebar overlay */}
+        <AnimatePresence>
+          {sidebarOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSidebarOpen(false)}
+              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            />
+          )}
+        </AnimatePresence>
 
       {/* Sidebar */}
       <aside
@@ -177,13 +198,20 @@ const CustomerDashboardLayout: React.FC<CustomerDashboardLayoutProps> = ({ child
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Wallet Balance Display */}
+            <Link 
+              to="/customer/wallet"
+              className="hidden sm:flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg hover:shadow-md transition-all"
+            >
+              <Wallet className="w-4 h-4 text-blue-600" />
+              <span className="text-sm font-semibold text-gray-900">
+                {walletBalance?.formatted || '₦0.00'}
+              </span>
+              <Plus className="w-3.5 h-3.5 text-blue-600" />
+            </Link>
             <button className="p-2 hover:bg-gray-100 rounded-lg relative">
               <Bell className="w-5 h-5 text-gray-600" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
-            </button>
-            <button className="hidden md:flex items-center gap-2 px-3 py-2 hover:bg-gray-100 rounded-lg">
-              <CreditCard className="w-5 h-5 text-gray-600" />
-              <span className="text-sm font-medium text-gray-700">Upgrade Plan</span>
             </button>
           </div>
         </header>

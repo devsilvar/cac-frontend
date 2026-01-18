@@ -1,409 +1,327 @@
 /**
- * Admin Revenue & Billing Page
- * Track revenue, subscriptions, and billing metrics
+ * Admin Revenue & Transactions Page
+ * Shows REAL wallet transactions and revenue data
  */
 
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
 import {
-  CurrencyDollarIcon,
-  ArrowTrendingUpIcon,
-  UsersIcon,
   BanknotesIcon,
-  ChartBarIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
-} from '@heroicons/react/24/outline';
-import { adminApi } from '../../services/admin.service';
-import type { BusinessMetrics } from '../../types/admin.types';
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
+  CreditCardIcon,
+  FunnelIcon,
+  ArrowPathIcon,
+} from '@heroicons/react/24/outline'
+import { adminApi } from '../../services/admin.service'
+import toast from 'react-hot-toast'
 
 const AdminRevenue: React.FC = () => {
-  const [metrics, setMetrics] = useState<BusinessMetrics | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [transactions, setTransactions] = useState<any[]>([])
+  const [summary, setSummary] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState<'all' | 'credit' | 'debit'>('all')
+  const [dateRange, setDateRange] = useState<{ start: string; end: string }>({
+    start: '',
+    end: '',
+  })
 
   useEffect(() => {
-    loadMetrics();
-  }, []);
+    loadTransactions()
+  }, [filter])
 
-  const loadMetrics = async () => {
-    setLoading(true);
-    setError(null);
+  const loadTransactions = async () => {
+    setLoading(true)
     try {
-      const response = await adminApi.dashboard.getMetrics();
-      console.log('Revenue metrics response:', response);
+      const params: any = { limit: 50, type: filter }
+      if (dateRange.start) params.startDate = dateRange.start
+      if (dateRange.end) params.endDate = dateRange.end
 
-      if (response.success) {
-        setMetrics(response.data.metrics);
+      const res = await adminApi.customers.getWalletTransactions(params)
+      if (res.success) {
+        setTransactions(res.data.transactions)
+        setSummary(res.data.summary)
       } else {
-        // Use dummy data if backend returns error
-        console.warn('Using dummy revenue data');
-        setMetrics({
-          mrr: 5000,
-          arr: 60000,
-          churnRate: 0.023,
-          customerLifetimeValue: 2500,
-          arpu: 50,
-          growthRate: 0.155,
-          revenueByPlan: {
-            free: 0,
-            basic: 1000,
-            pro: 2000,
-            enterprise: 2000
-          },
-          customersByPlan: {
-            free: 100,
-            basic: 50,
-            pro: 25,
-            enterprise: 5
-          }
-        });
+        toast.error('error' in res ? res.error.message : 'Failed to load transactions')
       }
     } catch (error) {
-      // Use dummy data on error
-      console.warn('Error loading metrics, using dummy data:', error);
-      setMetrics({
-        mrr: 5000,
-        arr: 60000,
-        churnRate: 0.023,
-        customerLifetimeValue: 2500,
-        arpu: 50,
-        growthRate: 0.155,
-        revenueByPlan: {
-          free: 0,
-          basic: 1000,
-          pro: 2000,
-          enterprise: 2000
-        },
-        customersByPlan: {
-          free: 100,
-          basic: 50,
-          pro: 25,
-          enterprise: 5
-        }
-      });
+      toast.error('Failed to load revenue data')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
-  };
+  const formatCurrency = (kobo: number) => {
+    return `₦${(kobo / 100).toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  }
 
-  // Ensure metrics has default values to prevent null/undefined errors
-  // Backend billing is not implemented yet, so we defensively default missing fields.
-  const safeMetrics: BusinessMetrics = {
-    mrr: metrics?.mrr ?? 5000,
-    arr: metrics?.arr ?? 60000,
-    churnRate: metrics?.churnRate ?? 0.023,
-    customerLifetimeValue: metrics?.customerLifetimeValue ?? 2500,
-    arpu: metrics?.arpu ?? 50,
-    growthRate: metrics?.growthRate ?? 0.155,
-    revenueByPlan: metrics?.revenueByPlan ?? { free: 0, basic: 1000, pro: 2000, enterprise: 2000 },
-    customersByPlan: metrics?.customersByPlan ?? { free: 100, basic: 50, pro: 25, enterprise: 5 }
-  };
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString('en-NG', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  }
+
+  const getStatusBadge = (status: string) => {
+    const styles = {
+      completed: 'bg-green-100 text-green-800',
+      pending: 'bg-yellow-100 text-yellow-800',
+      failed: 'bg-red-100 text-red-800',
+      reversed: 'bg-gray-100 text-gray-800',
+    }
+    return (
+      <span className={`px-2 py-1 text-xs font-medium rounded-full ${styles[status as keyof typeof styles] || 'bg-gray-100 text-gray-800'}`}>
+        {status}
+      </span>
+    )
+  }
+
+  const getTypeBadge = (type: string) => {
+    return type === 'credit' ? (
+      <span className="inline-flex items-center text-green-600 font-medium">
+        <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
+        Credit
+      </span>
+    ) : (
+      <span className="inline-flex items-center text-red-600 font-medium">
+        <ArrowTrendingDownIcon className="h-4 w-4 mr-1" />
+        Debit
+      </span>
+    )
+  }
 
   if (loading) {
     return (
-      <div className='flex items-center justify-center py-12'>
-        <div className='inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600'></div>
-        <p className='ml-3 text-sm text-gray-500'>Loading revenue data...</p>
+      <div className="flex items-center justify-center py-12">
+        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <p className="ml-3 text-sm text-gray-500">Loading revenue data...</p>
       </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className='space-y-6'>
-        <div>
-          <h1 className='text-2xl font-bold text-gray-900'>
-            Revenue & Billing
-          </h1>
-          <p className='mt-1 text-sm text-gray-500'>
-            Track revenue, subscriptions, and business metrics
-          </p>
-        </div>
-
-        <div className='bg-yellow-50 border border-yellow-200 rounded-lg p-6'>
-          <div className='flex'>
-            <div className='flex-shrink-0'>
-              <svg
-                className='h-5 w-5 text-yellow-400'
-                viewBox='0 0 20 20'
-                fill='currentColor'
-              >
-                <path
-                  fillRule='evenodd'
-                  d='M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z'
-                  clipRule='evenodd'
-                />
-              </svg>
-            </div>
-            <div className='ml-3'>
-              <h3 className='text-sm font-medium text-yellow-800'>
-                Revenue Data Not Available
-              </h3>
-              <p className='mt-2 text-sm text-yellow-700'>{error}</p>
-              <p className='mt-2 text-sm text-yellow-700'>
-                This feature requires backend metrics implementation. Coming
-                soon!
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Placeholder Cards */}
-        <div className='grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4'>
-          <PlaceholderCard label='MRR' icon={CurrencyDollarIcon} />
-          <PlaceholderCard label='ARR' icon={ArrowTrendingUpIcon} />
-          <PlaceholderCard label='CLV' icon={UsersIcon} />
-          <PlaceholderCard label='ARPU' icon={BanknotesIcon} />
-        </div>
-      </div>
-    );
+    )
   }
 
   return (
-    <div className='space-y-6'>
+    <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className='text-2xl font-bold text-gray-900'>Revenue & Billing</h1>
-        <p className='mt-1 text-sm text-gray-500'>
-          Track revenue, subscriptions, and business metrics
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Revenue & Transactions</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Real-time wallet transactions from all customers
+          </p>
+        </div>
+        <button
+          onClick={loadTransactions}
+          className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+        >
+          <ArrowPathIcon className="h-5 w-5 mr-2" />
+          Refresh
+        </button>
       </div>
 
-      {/* Key Metrics */}
-      <div className='grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4'>
-        <MetricCard
-          label='Monthly Recurring Revenue'
-          value={formatCurrency(safeMetrics.mrr)}
-          icon={CurrencyDollarIcon}
-          color='green'
-          change='+12.5%'
-          trend='up'
-        />
-        <MetricCard
-          label='Annual Recurring Revenue'
-          value={formatCurrency(safeMetrics.arr)}
-          icon={ArrowTrendingUpIcon}
-          color='blue'
-        />
-        <MetricCard
-          label='Customer Lifetime Value'
-          value={formatCurrency(safeMetrics.customerLifetimeValue)}
-          icon={UsersIcon}
-          color='purple'
-        />
-        <MetricCard
-          label='Average Revenue Per User'
-          value={formatCurrency(safeMetrics.arpu)}
-          icon={BanknotesIcon}
-          color='orange'
-        />
-      </div>
+      {/* Summary Cards */}
+      {summary && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <SummaryCard
+            label="Total Credits"
+            value={formatCurrency(summary.totalCredits)}
+            icon={ArrowTrendingUpIcon}
+            color="green"
+            subtitle={`${transactions.filter(t => t.type === 'credit' && t.status === 'completed').length} completed`}
+          />
+          <SummaryCard
+            label="Total Debits"
+            value={formatCurrency(summary.totalDebits)}
+            icon={ArrowTrendingDownIcon}
+            color="red"
+            subtitle={`${transactions.filter(t => t.type === 'debit' && t.status === 'completed').length} completed`}
+          />
+          <SummaryCard
+            label="Total Revenue"
+            value={formatCurrency(summary.netRevenue)}
+            icon={BanknotesIcon}
+            color="blue"
+            subtitle="Customer payments only"
+          />
+          <SummaryCard
+            label="Total Transactions"
+            value={summary.transactionCount.toString()}
+            icon={CreditCardIcon}
+            color="purple"
+            subtitle="All statuses"
+          />
+        </div>
+      )}
 
-      {/* Revenue Breakdown */}
-      <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
-        {/* Revenue by Plan */}
-        <div className='bg-white shadow-sm rounded-lg p-6'>
-          <h3 className='text-lg font-medium text-gray-900 mb-4'>Revenue by Plan</h3>
-          <div className='space-y-4'>
-            {Object.entries(safeMetrics.revenueByPlan || {}).map(
-              ([plan, revenue]) => (
-                <div key={plan} className='flex items-center justify-between'>
-                      <div className='flex items-center'>
-                        <span
-                          className={`inline-flex px-3 py-1 text-xs font-semibold rounded-full capitalize ${
-                            plan === 'enterprise'
-                              ? 'bg-purple-100 text-purple-800'
-                              : plan === 'pro'
-                              ? 'bg-blue-100 text-blue-800'
-                              : plan === 'basic'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}
-                        >
-                          {plan}
-                        </span>
-                        <span className='ml-3 text-sm text-gray-600'>
-                          {safeMetrics.customersByPlan[plan] || 0} customers
-                        </span>
-                      </div>
-                      <span className='text-sm font-medium text-gray-900'>
-                        {formatCurrency(revenue)}
-                      </span>
-                    </div>
-                  )
-                )}
-              </div>
-            </div>
-
-            {/* Business Health */}
-            <div className='bg-white shadow-sm rounded-lg p-6'>
-              <h3 className='text-lg font-medium text-gray-900 mb-4'>
-                Business Health
-              </h3>
-              <dl className='space-y-4'>
-                <div className='flex items-center justify-between'>
-                  <dt className='text-sm font-medium text-gray-500'>
-                    Churn Rate
-                  </dt>
-                  <dd
-                    className={`text-sm font-semibold ${
-                      safeMetrics.churnRate > 0.05 ? 'text-red-600' : 'text-green-600'
-                    }`}
-                  >
-                    {(safeMetrics.churnRate * 100).toFixed(1)}%
-                  </dd>
-                </div>
-                <div className='flex items-center justify-between'>
-                  <dt className='text-sm font-medium text-gray-500'>
-                    Growth Rate
-                  </dt>
-                  <dd className='text-sm font-semibold text-green-600'>
-                    +{(safeMetrics.growthRate * 100).toFixed(1)}%
-                  </dd>
-                </div>
-                <div className='flex items-center justify-between'>
-                  <dt className='text-sm font-medium text-gray-500'>
-                    Total Customers
-                  </dt>
-                  <dd className='text-sm font-semibold text-gray-900'>
-                    {Object.values(safeMetrics.customersByPlan).reduce(
-                      (a, b) => a + b,
-                      0
-                    )}
-                  </dd>
-                </div>
-              </dl>
-            </div>
+      {/* Filters */}
+      <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <FunnelIcon className="h-5 w-5 text-gray-400" />
+            <span className="text-sm font-medium text-gray-700">Filter:</span>
           </div>
+          
+          <div className="flex gap-2">
+            <button
+              onClick={() => setFilter('all')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                filter === 'all'
+                  ? 'bg-blue-100 text-blue-700'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setFilter('credit')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                filter === 'credit'
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Credits Only
+            </button>
+            <button
+              onClick={() => setFilter('debit')}
+              className={`px-4 py-2 rounded-lg text-sm font-medium ${
+                filter === 'debit'
+                  ? 'bg-red-100 text-red-700'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              Debits Only
+            </button>
+          </div>
+        </div>
+      </div>
 
-          {/* Coming Soon Features */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-6 border border-blue-100">
-            <h3 className='text-lg font-medium text-gray-900 mb-2'>
-              🚀 Coming Soon
-            </h3>
-            <p className='text-sm text-gray-600 mb-4'>
-              Enhanced revenue tracking features in development:
+      {/* Transactions Table */}
+      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Date & Time
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Customer
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Type
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Amount
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Description
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Reference
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {transactions.map((txn) => (
+                <motion.tr
+                  key={txn.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="hover:bg-gray-50"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {formatDate(txn.createdAt)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-900">
+                      {txn.customer?.company || txn.customer?.email || 'Unknown'}
+                    </div>
+                    <div className="text-xs text-gray-500">{txn.customer?.email}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {getTypeBadge(txn.type)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className={`text-sm font-bold ${
+                      txn.type === 'credit' ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {txn.type === 'credit' ? '+' : '-'}{formatCurrency(Math.abs(txn.amount))}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                    {txn.description}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {getStatusBadge(txn.status)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500 font-mono">
+                    {txn.reference}
+                  </td>
+                </motion.tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {transactions.length === 0 && (
+          <div className="text-center py-12">
+            <BanknotesIcon className="mx-auto h-12 w-12 text-gray-400" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900">No transactions yet</h3>
+            <p className="mt-1 text-sm text-gray-500">
+              Transactions will appear here when customers top up their wallets or use APIs.
             </p>
-            <ul className='grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-gray-700'>
-              <li className='flex items-center'>
-                <ChartBarIcon className='h-4 w-4 mr-2 text-blue-600' />
-                Revenue trend charts
-              </li>
-              <li className='flex items-center'>
-                <CurrencyDollarIcon className='h-4 w-4 mr-2 text-blue-600' />
-                Stripe integration dashboard
-              </li>
-              <li className='flex items-center'>
-                <UsersIcon className='h-4 w-4 mr-2 text-blue-600' />
-                Subscription management
-              </li>
-              <li className='flex items-center'>
-                <BanknotesIcon className='h-4 w-4 mr-2 text-blue-600' />
-                Invoice generation
-              </li>
-            </ul>
+          </div>
+        )}
       </div>
     </div>
   )
 }
 
-// Helper Components
-const MetricCard: React.FC<{
-  label: string;
-  value: string;
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
-  change?: string;
-  trend?: 'up' | 'down';
-}> = ({ label, value, icon: Icon, color, change, trend }) => {
+// Summary Card Component
+const SummaryCard: React.FC<{
+  label: string
+  value: string
+  icon: React.ComponentType<{ className?: string }>
+  color: 'green' | 'red' | 'blue' | 'purple'
+  subtitle?: string
+}> = ({ label, value, icon: Icon, color, subtitle }) => {
   const colorClasses = {
     green: 'bg-green-100 text-green-600',
+    red: 'bg-red-100 text-red-600',
     blue: 'bg-blue-100 text-blue-600',
     purple: 'bg-purple-100 text-purple-600',
-    orange: 'bg-orange-100 text-orange-600',
-  };
+  }
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className='bg-white overflow-hidden shadow-sm rounded-lg'
+      className="bg-white overflow-hidden shadow-sm rounded-lg border border-gray-200"
     >
-      <div className='p-5'>
-        <div className='flex items-center'>
-          <div className='flex-shrink-0'>
-            <div
-              className={`rounded-lg p-3 ${
-                colorClasses[color as keyof typeof colorClasses]
-              }`}
-            >
-              <Icon className='h-6 w-6' />
+      <div className="p-5">
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            <div className={`rounded-lg p-3 ${colorClasses[color]}`}>
+              <Icon className="h-6 w-6" />
             </div>
           </div>
-          <div className='ml-5 w-0 flex-1'>
+          <div className="ml-5 w-0 flex-1 min-w-0">
             <dl>
-              <dt className='text-sm font-medium text-gray-500 truncate'>
-                {label}
-              </dt>
-              <dd className='flex items-baseline'>
-                <div className='text-2xl font-semibold text-gray-900'>
-                  {value}
-                </div>
-                {change && trend && (
-                  <div
-                    className={`ml-2 flex items-baseline text-sm font-semibold ${
-                      trend === 'up' ? 'text-green-600' : 'text-red-600'
-                    }`}
-                  >
-                    {trend === 'up' ? (
-                      <ArrowUpIcon className='h-4 w-4 mr-1' />
-                    ) : (
-                      <ArrowDownIcon className='h-4 w-4 mr-1' />
-                    )}
-                    {change}
-                  </div>
-                )}
-              </dd>
+              <dt className="text-sm font-medium text-gray-500 truncate">{label}</dt>
+              <dd className="text-xl font-bold text-gray-900 break-words leading-tight" title={value}>{value}</dd>
+              {subtitle && <dd className="text-xs text-gray-500 mt-1 truncate" title={subtitle}>{subtitle}</dd>}
             </dl>
           </div>
         </div>
       </div>
     </motion.div>
-  );
-};
+  )
+}
 
-// Placeholder Card Component
-const PlaceholderCard: React.FC<{
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-}> = ({ label, icon: Icon }) => (
-  <div className='bg-white overflow-hidden shadow-sm rounded-lg opacity-50'>
-    <div className='p-5'>
-      <div className='flex items-center'>
-        <div className='flex-shrink-0'>
-          <div className='rounded-lg p-3 bg-gray-100'>
-            <Icon className='h-6 w-6 text-gray-400' />
-          </div>
-        </div>
-        <div className='ml-5 w-0 flex-1'>
-          <dl>
-            <dt className='text-sm font-medium text-gray-500 truncate'>
-              {label}
-            </dt>
-            <dd className='text-2xl font-semibold text-gray-400'>$0</dd>
-          </dl>
-        </div>
-      </div>
-    </div>
-  </div>
-);
-
-export default AdminRevenue;
+export default AdminRevenue

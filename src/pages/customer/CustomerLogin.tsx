@@ -30,7 +30,7 @@ const CustomerLogin: React.FC = () => {
   const { login } = useCustomerAuth()
   const navigate = useNavigate()
   const location = useLocation() as any
-  const from = location.state?.from || '/customer/me'
+  const from = location.state?.from || '/customer/dashboard'
   const showSignupNotice = new URLSearchParams(location.search).get('signup') === '1'
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -136,11 +136,16 @@ const CustomerLogin: React.FC = () => {
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
 
-          <div className="text-center text-sm text-gray-600">
-            Don’t have an account?{' '}
-            <Link to="/customer/signup" className="text-blue-600 hover:text-blue-700 font-medium">
-              Create one
+          <div className="flex items-center justify-between text-sm text-gray-600">
+            <Link to="/customer/forgot-password" className="text-blue-600 hover:text-blue-700 font-medium">
+              Forgot password?
             </Link>
+            <span>
+              Don’t have an account?{' '}
+              <Link to="/customer/signup" className="text-blue-600 hover:text-blue-700 font-medium">
+                Create one
+              </Link>
+            </span>
           </div>
         </form>
       </div>

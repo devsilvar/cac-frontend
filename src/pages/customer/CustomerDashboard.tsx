@@ -1,27 +1,44 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import CustomerDashboardLayout from '../../layouts/CustomerDashboardLayout'
 import { useCustomerApi } from '../../hooks/useCustomerApi'
+import { useCustomerAuth } from '../../context/CustomerAuthContext'
+import { useVerification } from '../../context/VerificationContext'
+import VerificationBanner from '../../components/VerificationBanner'
 import { Link } from 'react-router-dom'
-import { TrendingUp, Activity, Zap, Key, ArrowRight, Code, CheckCircle, AlertCircle } from 'lucide-react'
+import { TrendingUp, Activity, Zap, Key, ArrowRight, Code, CheckCircle, AlertCircle, Wallet, Plus, CreditCard } from 'lucide-react'
+import { walletService, WalletBalance } from '../../services/wallet.service'
 
 const API_BASE = (import.meta as any).env?.VITE_API_BASE_URL || ''
 const baseUrl = API_BASE ? API_BASE.replace(/\/$/, '') : ''
 
 const CustomerDashboard: React.FC = () => {
   const api = useCustomerApi()
+  const { loadMe } = useCustomerAuth()
+  const { data: verificationData, status: verificationStatus, refresh: refreshVerification, loading: verificationLoading } = useVerification()
   const [usage, setUsage] = useState<any>({})
   const [keys, setKeys] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [walletBalance, setWalletBalance] = useState<WalletBalance | null>(null)
 
   useEffect(() => {
     (async () => {
       try {
-        const [usageRes, keysRes] = await Promise.all([
+        // Refresh customer data and verification status from context
+        await Promise.all([
+          loadMe(),
+          refreshVerification()
+        ])
+        
+        const [usageRes, keysRes, balanceRes] = await Promise.all([
           api.get<any>('/api/v1/customer/usage').catch(() => ({ data: { usage: {} } })),
-          api.get<any>('/api/v1/customer/api-keys').catch(() => ({ data: { keys: [] } }))
+          api.get<any>('/api/v1/customer/api-keys').catch(() => ({ data: { keys: [] } })),
+          walletService.getBalance().catch(() => null)
         ])
         setUsage(usageRes?.data?.usage || usageRes?.usage || {})
         setKeys(keysRes?.data?.keys || keysRes?.keys || [])
+        if (balanceRes) {
+          setWalletBalance(balanceRes)
+        }
       } finally {
         setLoading(false)
       }
@@ -40,13 +57,14 @@ const CustomerDashboard: React.FC = () => {
   --data '{"SearchType":"ALL","searchTerm":"DANGOTE","maxResults":3}'`
   }, [])
 
-  // Stats cards data
+  // Stats cards data with explicit Tailwind classes (dynamic classes don't work with Tailwind)
   const stats = [
     {
       title: 'Requests Today',
       value: requestsToday,
       icon: Activity,
-      color: 'blue',
+      bgClass: 'bg-blue-100',
+      iconClass: 'text-blue-600',
       trend: '+12%',
       trendUp: true
     },
@@ -54,7 +72,8 @@ const CustomerDashboard: React.FC = () => {
       title: 'This Month',
       value: requestsThisMonth,
       icon: TrendingUp,
-      color: 'purple',
+      bgClass: 'bg-purple-100',
+      iconClass: 'text-purple-600',
       trend: '+23%',
       trendUp: true
     },
@@ -62,7 +81,8 @@ const CustomerDashboard: React.FC = () => {
       title: 'Active API Keys',
       value: activeKeys,
       icon: Key,
-      color: 'green',
+      bgClass: 'bg-green-100',
+      iconClass: 'text-green-600',
       trend: keys.length > 0 ? `${keys.length} total` : 'None yet',
       trendUp: null
     },
@@ -70,16 +90,18 @@ const CustomerDashboard: React.FC = () => {
       title: 'Success Rate',
       value: '99.2%',
       icon: Zap,
-      color: 'orange',
+      bgClass: 'bg-orange-100',
+      iconClass: 'text-orange-600',
       trend: 'Excellent',
       trendUp: true
     }
   ]
 
   const quickActions = [
-    { label: 'Create API Key', to: '/customer/api-keys', icon: Key, color: 'blue' },
-    { label: 'View Documentation', to: '/docs', icon: Code, color: 'purple' },
-    { label: 'Check Usage', to: '/customer/usage', icon: Activity, color: 'green' }
+    { label: 'Top Up Wallet', to: '/customer/wallet', icon: Wallet, bgClass: 'bg-green-100', iconClass: 'text-green-600' },
+    { label: 'Create API Key', to: '/customer/api-keys', icon: Key, bgClass: 'bg-blue-100', iconClass: 'text-blue-600' },
+    { label: 'View Documentation', to: '/docs', icon: Code, bgClass: 'bg-purple-100', iconClass: 'text-purple-600' },
+    { label: 'Check Usage', to: '/customer/usage', icon: Activity, bgClass: 'bg-orange-100', iconClass: 'text-orange-600' }
   ]
 
   if (loading) {
@@ -101,6 +123,39 @@ const CustomerDashboard: React.FC = () => {
           <p className="text-gray-600 mt-1">Monitor your API usage and manage your integration</p>
         </div>
 
+        {/* Verification Banner - Uses centralized VerificationContext */}
+        <VerificationBanner context="dashboard" />
+
+        {/* Wallet Balance Card */}
+        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-2xl p-6 md:p-8 text-white shadow-xl overflow-hidden relative">
+          {/* Background decoration */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+          <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2"></div>
+          
+          <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+            {/* Balance Info */}
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+                <Wallet className="w-7 h-7" />
+              </div>
+              <div>
+                <p className="text-white/70 text-sm font-medium uppercase tracking-wider">Available Balance</p>
+                <p className="text-3xl md:text-4xl font-bold mt-1">{walletBalance?.formatted || '₦0.00'}</p>
+              </div>
+            </div>
+            
+            {/* Action Button */}
+            <Link
+              to="/customer/wallet"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-indigo-600 font-semibold rounded-xl hover:bg-white/90 transition-all shadow-lg hover:shadow-xl group"
+            >
+              <Plus className="w-5 h-5" />
+              <span>Top Up Wallet</span>
+              <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+            </Link>
+          </div>
+        </div>
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat, idx) => (
@@ -109,8 +164,8 @@ const CustomerDashboard: React.FC = () => {
               className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all duration-200"
             >
               <div className="flex items-center justify-between">
-                <div className={`w-12 h-12 bg-${stat.color}-100 rounded-lg flex items-center justify-center`}>
-                  <stat.icon className={`w-6 h-6 text-${stat.color}-600`} />
+                <div className={`w-12 h-12 ${stat.bgClass} rounded-lg flex items-center justify-center`}>
+                  <stat.icon className={`w-6 h-6 ${stat.iconClass}`} />
                 </div>
                 {stat.trendUp !== null && (
                   <span className={`text-xs font-medium ${stat.trendUp ? 'text-green-600' : 'text-red-600'}`}>
@@ -129,15 +184,15 @@ const CustomerDashboard: React.FC = () => {
         {/* Quick Actions */}
         <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {quickActions.map((action, idx) => (
               <Link
                 key={idx}
                 to={action.to}
                 className="bg-white rounded-lg p-4 flex items-center gap-3 hover:shadow-md transition-all duration-200 group"
               >
-                <div className={`w-10 h-10 bg-${action.color}-100 rounded-lg flex items-center justify-center`}>
-                  <action.icon className={`w-5 h-5 text-${action.color}-600`} />
+                <div className={`w-10 h-10 ${action.bgClass} rounded-lg flex items-center justify-center`}>
+                  <action.icon className={`w-5 h-5 ${action.iconClass}`} />
                 </div>
                 <span className="flex-1 font-medium text-gray-900">{action.label}</span>
                 <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-gray-900 group-hover:translate-x-1 transition-all" />

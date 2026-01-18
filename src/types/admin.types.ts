@@ -40,6 +40,7 @@ export interface Customer {
   address?: string
   plan: 'free' | 'basic' | 'pro' | 'enterprise'
   status: 'active' | 'suspended' | 'inactive'
+  verificationStatus?: 'inactive' | 'cac_pending' | 'admin_review' | 'verified' | 'rejected'
   stripeCustomerId?: string
   stripeSubscriptionId?: string
   createdAt: string
@@ -59,6 +60,7 @@ export interface CustomerListItem {
   company?: string
   plan: string
   status: 'active' | 'suspended' | 'inactive'
+  verificationStatus?: 'inactive' | 'cac_pending' | 'admin_review' | 'verified' | 'rejected'
   createdAt: string
   usage?: number
   revenue?: number

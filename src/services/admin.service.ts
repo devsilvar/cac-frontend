@@ -31,7 +31,9 @@ import type {
   ApiError,
 } from '../types/admin.types'
 
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:3000/api/v1'
+const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL 
+  ? `${(import.meta as any).env.VITE_API_BASE_URL}/api/v1` 
+  : 'http://localhost:3000/api/v1'
 
 // ============================================================================
 // HELPER FUNCTIONS
@@ -255,6 +257,36 @@ export const customerService = {
   async getCustomerApiKeys(customerId: string): Promise<ApiResponse<{ apiKeys: ApiKey[] }> | ApiError> {
     return apiRequest<{ apiKeys: ApiKey[] }>(`/admin/customers/${customerId}/keys`)
   },
+
+  /**
+   * Get all wallet transactions (for revenue tracking)
+   */
+  async getWalletTransactions(params?: {
+    limit?: number
+    offset?: number
+    type?: 'all' | 'credit' | 'debit'
+    startDate?: string
+    endDate?: string
+  }): Promise<ApiResponse<{
+    transactions: any[]
+    pagination: any
+    summary: {
+      totalCredits: number
+      totalDebits: number
+      netRevenue: number
+      transactionCount: number
+    }
+  }> | ApiError> {
+    const queryParams = new URLSearchParams()
+    if (params?.limit) queryParams.append('limit', params.limit.toString())
+    if (params?.offset) queryParams.append('offset', params.offset.toString())
+    if (params?.type) queryParams.append('type', params.type)
+    if (params?.startDate) queryParams.append('startDate', params.startDate)
+    if (params?.endDate) queryParams.append('endDate', params.endDate)
+    
+    const queryString = queryParams.toString()
+    return apiRequest(`/admin/customers/wallet/transactions${queryString ? `?${queryString}` : ''}`)
+  },
 }
 
 // ============================================================================
@@ -348,6 +380,138 @@ export const systemService = {
   },
 }
 
+// ============================================================================
+// VERIFICATION SERVICES
+// ============================================================================
+
+export const verificationService = {
+  /**
+   * Get verification queue (customers in admin_review)
+   */
+  async getQueue(): Promise<ApiResponse<{ customers: any[]; total: number }> | ApiError> {
+    return apiRequest<{ customers: any[]; total: number }>('/admin/verification/queue')
+  },
+
+  /**
+   * List verifications by status (admin_review|verified|rejected|cac_pending|inactive|all)
+   */
+  async list(status: string = 'all'): Promise<ApiResponse<{ customers: any[]; total: number }> | ApiError> {
+    const qs = new URLSearchParams({ status }).toString()
+    return apiRequest<{ customers: any[]; total: number }>(`/admin/verification/list?${qs}`)
+  },
+
+  /**
+   * Get full verification details for a customer
+   */
+  async getDetails(customerId: string): Promise<ApiResponse<any> | ApiError> {
+    return apiRequest<any>(`/admin/verification/${customerId}`)
+  },
+
+  /**
+   * Approve verification
+   */
+  async approve(customerId: string, adminNotes?: string): Promise<ApiResponse<any> | ApiError> {
+    return apiRequest<any>(`/admin/verification/${customerId}/approve`, {
+      method: 'POST',
+      body: JSON.stringify({ adminNotes }),
+    })
+  },
+
+  /**
+   * Reject verification
+   */
+  async reject(customerId: string, reason: string, adminNotes?: string): Promise<ApiResponse<any> | ApiError> {
+    return apiRequest<any>(`/admin/verification/${customerId}/reject`, {
+      method: 'POST',
+      body: JSON.stringify({ reason, adminNotes }),
+    })
+  },
+
+  /**
+   * Get verification stats
+   */
+  async getStats(): Promise<ApiResponse<any> | ApiError> {
+    return apiRequest<any>('/admin/verification/stats')
+  },
+}
+
+// ============================================================================
+// PRICING MANAGEMENT SERVICES
+// ============================================================================
+
+export const pricingService = {
+  /**
+   * Get all service pricing
+   */
+  async getAll(activeOnly?: boolean): Promise<ApiResponse<{ pricing: any[] }> | ApiError> {
+    const params = new URLSearchParams()
+    if (activeOnly) params.append('activeOnly', 'true')
+    const queryString = params.toString()
+    return apiRequest<{ pricing: any[] }>(`/admin/pricing${queryString ? `?${queryString}` : ''}`)
+  },
+
+  /**
+   * Get pricing for specific service
+   */
+  async get(serviceCode: string): Promise<ApiResponse<{ pricing: any }> | ApiError> {
+    return apiRequest<{ pricing: any }>(`/admin/pricing/${serviceCode}`)
+  },
+
+  /**
+   * Create new service pricing
+   */
+  async create(data: {
+    serviceCode: string
+    serviceName: string
+    priceKobo: number
+    description?: string
+    category?: string
+    isActive?: boolean
+  }): Promise<ApiResponse<{ pricing: any; message: string }> | ApiError> {
+    return apiRequest<{ pricing: any; message: string }>('/admin/pricing', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * Update service pricing
+   */
+  async update(
+    serviceCode: string,
+    data: {
+      serviceName?: string
+      priceKobo?: number
+      description?: string
+      category?: string
+      isActive?: boolean
+    }
+  ): Promise<ApiResponse<{ pricing: any; message: string }> | ApiError> {
+    return apiRequest<{ pricing: any; message: string }>(`/admin/pricing/${serviceCode}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * Delete service pricing
+   */
+  async delete(serviceCode: string): Promise<ApiResponse<{ message: string }> | ApiError> {
+    return apiRequest<{ message: string }>(`/admin/pricing/${serviceCode}`, {
+      method: 'DELETE',
+    })
+  },
+
+  /**
+   * Seed default pricing (for initial setup)
+   */
+  async seed(): Promise<ApiResponse<{ created: number; skipped: number; total: number; message: string }> | ApiError> {
+    return apiRequest<{ created: number; skipped: number; total: number; message: string }>('/admin/pricing/seed', {
+      method: 'POST',
+    })
+  },
+}
+
 // Export all services as a single object
 export const adminApi = {
   auth: authService,
@@ -356,6 +520,8 @@ export const adminApi = {
   apiKeys: apiKeyService,
   monitoring: monitoringService,
   system: systemService,
+  verification: verificationService,
+  pricing: pricingService,
 }
 
 export default adminApi

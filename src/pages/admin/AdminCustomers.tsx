@@ -3,7 +3,7 @@
  * Full CRUD operations for customer management
  */
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import {
@@ -491,12 +491,72 @@ const CustomerRow: React.FC<{
   onDelete: (customer: CustomerListItem) => void
 }> = ({ customer, onEdit, onSuspend, onActivate, onDelete }) => {
   const [showMenu, setShowMenu] = useState(false)
+  const buttonRef = useRef<HTMLButtonElement | null>(null)
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number; openUp: boolean } | null>(null)
+
+  const computeMenuPos = () => {
+    const el = buttonRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const menuWidth = 220 // slightly wider than 48
+    const menuHeight = 240 // approximate; enough for all items
+    const margin = 8
+
+    const spaceBelow = window.innerHeight - rect.bottom
+    const openUp = spaceBelow < menuHeight + margin
+
+    // Align right edge of menu to right edge of button
+    const left = Math.max(margin, Math.min(window.innerWidth - menuWidth - margin, rect.right - menuWidth))
+
+    const top = openUp
+      ? Math.max(margin, rect.top - menuHeight - margin)
+      : Math.min(window.innerHeight - menuHeight - margin, rect.bottom + margin)
+
+    setMenuPos({ top, left, openUp })
+  }
+
+  useEffect(() => {
+    if (!showMenu) return
+    computeMenuPos()
+
+    const onResize = () => computeMenuPos()
+    const onScroll = () => computeMenuPos()
+    window.addEventListener('resize', onResize)
+    window.addEventListener('scroll', onScroll, true)
+    return () => {
+      window.removeEventListener('resize', onResize)
+      window.removeEventListener('scroll', onScroll, true)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showMenu])
   
   const statusColors = {
     active: 'bg-green-100 text-green-800',
     suspended: 'bg-orange-100 text-orange-800',
     inactive: 'bg-gray-100 text-gray-800',
   }
+
+  const verificationColors = {
+    verified: 'bg-green-100 text-green-800',
+    admin_review: 'bg-purple-100 text-purple-800',
+    cac_pending: 'bg-blue-100 text-blue-800',
+    rejected: 'bg-red-100 text-red-800',
+    inactive: 'bg-orange-100 text-orange-800',
+  }
+
+  const getVerificationLabel = (status?: string) => {
+    switch (status) {
+      case 'verified': return 'Verified'
+      case 'admin_review': return 'Under Review'
+      case 'cac_pending': return 'CAC Pending'
+      case 'rejected': return 'Rejected'
+      case 'inactive': return 'Not Verified'
+      default: return 'Not Verified'
+    }
+  }
+
+  // Determine actual status based on verification
+  const actualStatus = customer.verificationStatus === 'verified' ? 'active' : 'inactive'
   
   return (
     <tr className="hover:bg-gray-50">
@@ -512,9 +572,14 @@ const CustomerRow: React.FC<{
         </span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusColors[customer.status]} capitalize`}>
-          {customer.status}
-        </span>
+        <div className="flex flex-col gap-1">
+          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${statusColors[actualStatus]} capitalize`}>
+            {actualStatus}
+          </span>
+          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${verificationColors[customer.verificationStatus || 'inactive']}`}>
+            {getVerificationLabel(customer.verificationStatus)}
+          </span>
+        </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
         {customer.usage || 0} calls
@@ -524,7 +589,12 @@ const CustomerRow: React.FC<{
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium relative">
         <button
-          onClick={() => setShowMenu(!showMenu)}
+          ref={buttonRef}
+          onClick={() => {
+            const next = !showMenu
+            setShowMenu(next)
+            if (!next) setMenuPos(null)
+          }}
           className="text-gray-400 hover:text-gray-600"
         >
           <EllipsisVerticalIcon className="h-5 w-5" />
@@ -536,7 +606,13 @@ const CustomerRow: React.FC<{
               className="fixed inset-0 z-10"
               onClick={() => setShowMenu(false)}
             />
-            <div className="absolute right-0 z-20 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5">
+            <div
+              className="fixed z-20 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5"
+              style={{
+                top: menuPos?.top ?? 0,
+                left: menuPos?.left ?? 0,
+              }}
+            >
               <div className="py-1">
                 <Link
                   to={`/admin/customers/${customer.id}`}

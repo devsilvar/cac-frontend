@@ -49,15 +49,22 @@ const CustomerProfile: React.FC = () => {
   }, [customer?.plan])
 
   const statusStyles = useMemo(() => {
-    switch (customer?.status) {
-      case 'active':
+    const verificationStatus = customer?.verificationStatus || 'inactive'
+    
+    switch (verificationStatus) {
+      case 'verified':
         return 'bg-green-100 text-green-700'
-      case 'suspended':
+      case 'admin_review':
+        return 'bg-purple-100 text-purple-700'
+      case 'cac_pending':
+        return 'bg-blue-100 text-blue-700'
+      case 'rejected':
         return 'bg-red-100 text-red-700'
+      case 'inactive':
       default:
-        return 'bg-yellow-100 text-yellow-700'
+        return 'bg-orange-100 text-orange-700'
     }
-  }, [customer?.status])
+  }, [customer?.verificationStatus])
 
   const onSave = async () => {
     setFormError(null)
@@ -115,8 +122,13 @@ const CustomerProfile: React.FC = () => {
                 <h2 className="text-2xl font-bold text-gray-900">{customer?.company || 'User'}</h2>
                 <p className="text-gray-600">{customer?.email}</p>
               </div>
-              <div className={`mb-2 px-4 py-2 rounded-lg font-medium capitalize ${statusStyles}`}>
-                {customer?.status || 'Unknown'}
+              <div className={`mb-2 px-4 py-2 rounded-lg text-sm font-semibold capitalize ${statusStyles}`}>
+                {customer?.verificationStatus === 'verified' && 'Verified'}
+                {customer?.verificationStatus === 'admin_review' && 'Under Review'}
+                {customer?.verificationStatus === 'cac_pending' && 'CAC Pending'}
+                {customer?.verificationStatus === 'rejected' && 'Rejected'}
+                {customer?.verificationStatus === 'inactive' && 'Not Verified'}
+                {!customer?.verificationStatus && 'Not Verified'}
               </div>
             </div>
           </div>

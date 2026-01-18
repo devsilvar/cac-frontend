@@ -180,21 +180,47 @@ const AdminCustomerDetails: React.FC = () => {
             </div>
 
             <div>
-              <dt className="text-sm font-medium text-gray-500">Status</dt>
-              <dd className="mt-1">
+              <dt className="text-sm font-medium text-gray-500">Account Status</dt>
+              <dd className="mt-1 space-y-2">
                 <span className={`inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full ${
-                  customer.status === 'active' 
+                  customer.verificationStatus === 'verified' 
                     ? 'bg-green-100 text-green-800' 
-                    : customer.status === 'suspended'
-                    ? 'bg-orange-100 text-orange-800'
                     : 'bg-gray-100 text-gray-800'
                 } capitalize`}>
-                  {customer.status === 'active' ? (
+                  {customer.verificationStatus === 'verified' ? (
                     <CheckCircleIcon className="h-4 w-4 mr-1" />
                   ) : (
                     <XCircleIcon className="h-4 w-4 mr-1" />
                   )}
-                  {customer.status}
+                  {customer.verificationStatus === 'verified' ? 'Active' : 'Inactive'}
+                </span>
+              </dd>
+            </div>
+
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Verification Status</dt>
+              <dd className="mt-1">
+                <span className={`inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full ${
+                  customer.verificationStatus === 'verified'
+                    ? 'bg-green-100 text-green-800'
+                    : customer.verificationStatus === 'admin_review'
+                    ? 'bg-purple-100 text-purple-800'
+                    : customer.verificationStatus === 'cac_pending'
+                    ? 'bg-blue-100 text-blue-800'
+                    : customer.verificationStatus === 'rejected'
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-orange-100 text-orange-800'
+                }`}>
+                  {customer.verificationStatus === 'verified' ? (
+                    <CheckCircleIcon className="h-4 w-4 mr-1" />
+                  ) : (
+                    <XCircleIcon className="h-4 w-4 mr-1" />
+                  )}
+                  {customer.verificationStatus === 'verified' && 'Verified'}
+                  {customer.verificationStatus === 'admin_review' && 'Under Review'}
+                  {customer.verificationStatus === 'cac_pending' && 'CAC Pending'}
+                  {customer.verificationStatus === 'rejected' && 'Rejected'}
+                  {(!customer.verificationStatus || customer.verificationStatus === 'inactive') && 'Not Verified'}
                 </span>
               </dd>
             </div>

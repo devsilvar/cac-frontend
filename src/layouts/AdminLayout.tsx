@@ -3,7 +3,7 @@
  * Comprehensive sidebar navigation layout for admin pages
  */
 
-import React, { useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, Outlet } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -20,8 +20,11 @@ import {
   BellIcon,
   MagnifyingGlassIcon,
   DocumentChartBarIcon,
+  CurrencyDollarIcon,
+  BanknotesIcon,
 } from '@heroicons/react/24/outline'
 import { useAdminAuth } from '../hooks/useAdminAuth'
+import { adminApi } from '../services/admin.service'
 
 interface NavItem {
   name: string
@@ -35,16 +38,33 @@ const AdminLayout: React.FC = () => {
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [verificationBadge, setVerificationBadge] = useState<number | undefined>(undefined)
 
-  const navigation: NavItem[] = [
+  useEffect(() => {
+    // Load pending verification count for sidebar badge
+    ;(async () => {
+      try {
+        const res = await adminApi.verification.getStats()
+        if (res.success) {
+          setVerificationBadge(res.data.totalPending)
+        }
+      } catch {
+        // ignore
+      }
+    })()
+  }, [])
+
+  const navigation: NavItem[] = useMemo(() => [
     { name: 'Dashboard', path: '/admin/dashboard', icon: HomeIcon },
     { name: 'Customers', path: '/admin/customers', icon: UsersIcon },
-    // API Keys removed - access via Customers → View Keys
+    { name: 'Verifications', path: '/admin/verification', icon: ShieldCheckIcon, badge: verificationBadge },
+    { name: 'Revenue', path: '/admin/revenue', icon: BanknotesIcon },
+    { name: 'Pricing', path: '/admin/pricing', icon: CurrencyDollarIcon },
     { name: 'Monitoring', path: '/admin/monitoring', icon: ChartBarIcon },
     { name: 'System', path: '/admin/system', icon: ShieldCheckIcon },
     { name: 'Profile', path: '/admin/profile', icon: UserCircleIcon },
     { name: 'Settings', path: '/admin/settings', icon: Cog6ToothIcon },
-  ]
+  ], [verificationBadge])
 
   const isActivePath = (path: string) => {
     return location.pathname === path || location.pathname.startsWith(path + '/')

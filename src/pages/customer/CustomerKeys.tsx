@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import CustomerDashboardLayout from '../../layouts/CustomerDashboardLayout'
 import { useCustomerApi } from '../../hooks/useCustomerApi'
+import { useCustomerAuth } from '../../context/CustomerAuthContext'
+import { useVerification } from '../../context/VerificationContext'
+import VerificationBanner from '../../components/VerificationBanner'
 import { Copy, Trash2, Plus, Key, CheckCircle, AlertCircle, Eye, EyeOff } from 'lucide-react'
 
 interface ApiKeyItem { id: string; name: string; status: string; createdAt?: string; lastFour?: string; keyPrefix?: string }
@@ -17,6 +21,8 @@ const copyToClipboard = async (text: string) => {
 
 const CustomerKeys: React.FC = () => {
   const api = useCustomerApi()
+  const { customer, loadMe } = useCustomerAuth()
+  const { status: verificationStatus, isVerified, loading: verificationLoading, refresh: refreshVerification } = useVerification()
   const [keys, setKeys] = useState<ApiKeyItem[]>([])
   const [creating, setCreating] = useState(false)
   const [newName, setNewName] = useState('')
@@ -24,6 +30,17 @@ const CustomerKeys: React.FC = () => {
   const [copied, setCopied] = useState('')
 
   const [error, setError] = useState('')
+  const [customerLoading, setCustomerLoading] = useState(true)
+  
+  // Debug logging - using centralized verification context
+  console.log('[CustomerKeys] Verification status from context:', {
+    verificationStatus,
+    isVerified,
+    customerId: customer?.id,
+    customerEmail: customer?.email,
+    customerLoading,
+    verificationLoading
+  })
   
   const curlExample = `curl -X POST "${window.location.origin}/api/v1/name-search" \\
   -H "Authorization: Token ck_YOUR_API_KEY" \\
@@ -41,7 +58,17 @@ const CustomerKeys: React.FC = () => {
     }
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { 
+    const init = async () => {
+      setCustomerLoading(true)
+      // Refresh customer data and verification status from context
+      await Promise.all([loadMe(), refreshVerification()])
+      setCustomerLoading(false)
+      // Then load keys
+      await load()
+    }
+    init()
+  }, [])
 
   const createKey = async () => {
     setCreating(true)
@@ -70,6 +97,9 @@ const CustomerKeys: React.FC = () => {
           <p className="text-gray-600 mt-1">Create and manage your API authentication keys</p>
         </div>
 
+        {/* Verification Banner - Uses reusable component synced with Dashboard */}
+        <VerificationBanner context="api-keys" showWhileLoading={customerLoading} />
+
         {/* Create New Key Card */}
         <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl border border-blue-100 p-6">
           <div className="flex items-center gap-3 mb-4">
@@ -91,8 +121,9 @@ const CustomerKeys: React.FC = () => {
             />
             <button 
               onClick={createKey} 
-              disabled={creating} 
+              disabled={creating || !isVerified} 
               className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 justify-center whitespace-nowrap"
+              title={!isVerified ? 'Please complete verification first' : ''}
             >
               <Key className="w-4 h-4" />
               {creating ? 'Creating...' : 'Create Key'}
