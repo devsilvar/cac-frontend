@@ -89,10 +89,8 @@ const CustomerDashboardLayout: React.FC<CustomerDashboardLayoutProps> = ({ child
         {/* Logo Section */}
         <div className="h-16 flex items-center justify-between px-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">B</span>
-            </div>
-            <span className="font-bold text-gray-900 text-lg">BusinessAPI</span>
+            <img src="/logo-wallx.png" alt="WallX" className="w-10 h-10 object-contain" />
+            <span className="font-bold text-[#473893] text-lg">WallX</span>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
@@ -226,7 +224,7 @@ const CustomerDashboardLayout: React.FC<CustomerDashboardLayoutProps> = ({ child
         {/* Footer */}
         <footer className="bg-white border-t border-gray-200 px-4 lg:px-8 py-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-gray-600">
-            <div>© {new Date().getFullYear()} BusinessAPI. All rights reserved.</div>
+            <div>© {new Date().getFullYear()} WallX Business APIs. All rights reserved.</div>
             <div className="flex items-center gap-6">
               <a href="/docs" className="hover:text-gray-900 transition-colors">Documentation</a>
               <a href="#" className="hover:text-gray-900 transition-colors">Support</a>

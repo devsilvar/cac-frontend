@@ -57,9 +57,9 @@ const HomePage: React.FC = () => {
               transition={{ duration: 0.5 }}
             >
               <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-                Business APIs
+                WallX Business APIs
                 <br />
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-[#473893] to-[#6b4fa8] bg-clip-text text-transparent">
                   Made Simple
                 </span>
               </h1>
@@ -70,7 +70,7 @@ const HomePage: React.FC = () => {
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                <button className="bg-[#473893] text-white px-8 py-3 rounded-lg hover:bg-[#3a2e7a] transition-colors font-medium">
                   Get API Key
                 </button>
                 <Link to="/docs" className="border border-gray-300 text-gray-700 px-8 py-3 rounded-lg hover:border-gray-400 transition-colors font-medium">
@@ -130,7 +130,7 @@ const HomePage: React.FC = () => {
                 viewport={{ once: true }}
                 className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow"
               >
-                <feature.icon className="w-12 h-12 text-blue-600 mb-4" />
+                <feature.icon className="w-12 h-12 text-[#473893] mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">
                   {feature.title}
                 </h3>
@@ -173,7 +173,7 @@ const HomePage: React.FC = () => {
               </div>
             </div>
 
-            <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-8 rounded-2xl">
+            <div className="bg-gradient-to-br from-[#473893]/10 to-[#6b4fa8]/10 p-8 rounded-2xl">
               <div className="bg-white p-6 rounded-lg shadow-sm">
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Real-time Response</h3>
                 <div className="bg-green-50 border border-green-200 p-4 rounded-lg">
@@ -251,7 +251,7 @@ const HomePage: React.FC = () => {
           </div>
 
           <div className="text-center mt-8">
-            <Link to="/pricing" className="text-blue-600 hover:text-blue-700 font-medium">
+            <Link to="/pricing" className="text-[#473893] hover:text-[#3a2e7a] font-medium">
               View complete pricing →
             </Link>
           </div>
@@ -259,20 +259,20 @@ const HomePage: React.FC = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-blue-600">
+      <section className="py-20 bg-[#473893]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             Ready to get started?
           </h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+          <p className="text-xl text-[#473893]/80 mb-8 max-w-2xl mx-auto">
             Join thousands of developers building the future of business operations
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button className="bg-white text-blue-600 px-8 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+            <button className="bg-white text-[#473893] px-8 py-3 rounded-lg hover:bg-gray-50 transition-colors font-medium">
               Start Free Trial
             </button>
-            <button className="border border-blue-400 text-white px-8 py-3 rounded-lg hover:border-blue-300 transition-colors font-medium">
+            <button className="border border-white/50 text-white px-8 py-3 rounded-lg hover:bg-white/10 transition-colors font-medium">
               Contact Sales
             </button>
           </div>
@@ -285,10 +285,8 @@ const HomePage: React.FC = () => {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                  <CodeBracketIcon className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-xl font-semibold text-gray-900">BusinessAPI</span>
+                <img src="/logo-wallx.png" alt="WallX" className="w-10 h-10 object-contain" />
+                <span className="text-xl font-bold text-[#473893]">WallX</span>
               </div>
               <p className="text-gray-600">
                 Streamlining business operations with powerful APIs
@@ -329,7 +327,7 @@ const HomePage: React.FC = () => {
               <Link to="/pricing" className="hover:text-gray-900">Pricing</Link>
               <Link to="/customer/login" className="hover:text-gray-900">Customer Portal</Link>
             </div>
-            <p>&copy; 2024 BusinessAPI. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} WallX Business APIs. All rights reserved.</p>
           </div>
         </div>
       </footer>
