@@ -6,7 +6,7 @@
 
 import React, { createContext, useContext, ReactNode, useMemo } from 'react'
 import { useQuery } from '../hooks/useQuery'
-import axios from 'axios'
+import { useCustomerApi } from '../hooks/useCustomerApi'
 
 export interface UsageStats {
   requestsThisMonth: number
@@ -31,6 +31,8 @@ const UsageContext = createContext<UsageContextType | undefined>(undefined)
 
 // Memoized provider to prevent unnecessary re-renders
 export const OptimizedUsageProvider: React.FC<{ children: ReactNode }> = React.memo(({ children }) => {
+  const customerApi = useCustomerApi()
+  
   const { data: usage, loading, error, refetch } = useQuery<UsageStats>(
     'customer-usage-optimized',
     async () => {
@@ -39,14 +41,8 @@ export const OptimizedUsageProvider: React.FC<{ children: ReactNode }> = React.m
         throw new Error('No authentication token found')
       }
 
-      const response = await axios.get('/api/v1/customer/usage', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
-
-      return response?.data?.data?.usage || response?.data?.usage || {
+      const response = await customerApi.get<{ data: { usage: UsageStats } }>('/api/v1/customer/usage')
+      return response?.data?.usage || response?.data || {
         requestsThisMonth: 0,
         requestsToday: 0,
         totalCalls: 0,

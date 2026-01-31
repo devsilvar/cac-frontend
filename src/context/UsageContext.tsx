@@ -4,7 +4,7 @@
  */
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
-import axios from 'axios'
+import { useCustomerApi } from '../hooks/useCustomerApi'
 
 export interface UsageStats {
   requestsThisMonth: number
@@ -28,6 +28,7 @@ interface UsageContextType {
 const UsageContext = createContext<UsageContextType | undefined>(undefined)
 
 export const UsageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const customerApi = useCustomerApi()
   const [usage, setUsage] = useState<UsageStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -44,16 +45,11 @@ export const UsageProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       }
 
       console.log('[UsageContext] Fetching usage from API...') // DEBUG
-      const response = await axios.get('/api/v1/customer/usage', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
-      console.log('[UsageContext] API Response:', response.data) // DEBUG
+      const response = await customerApi.get<{ data: { usage: UsageStats } }>('/api/v1/customer/usage')
+      console.log('[UsageContext] API Response:', response) // DEBUG
       
-      if (response?.data?.data?.usage || response?.data?.usage) {
-        const usageData = response?.data?.data?.usage || response?.data?.usage || null
+      if (response?.data?.usage || response?.data) {
+        const usageData = response?.data?.usage || response?.data || null
         console.log('[UsageContext] Setting usage data:', usageData) // DEBUG
         setUsage(usageData)
       } else {
