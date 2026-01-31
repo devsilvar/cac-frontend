@@ -4,7 +4,7 @@
  */
 
 // Original contexts (kept for backwards compatibility)
-export { AuthProvider, useAuth } from './AuthContext'
+export { AuthProvider, useAuthContext as useAuth } from './AuthContext'
 export { CustomerAuthProvider, useCustomerAuth } from './CustomerAuthContext'
 export { VerificationProvider, useVerification } from './VerificationContext'
 export { UsageProvider, useUsage } from './UsageContext'

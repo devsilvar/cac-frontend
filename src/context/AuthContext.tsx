@@ -7,7 +7,7 @@ export interface AdminUser {
   permissions: string[]
 }
 
-interface AuthContextValue {
+export interface AuthContextValue {
   isAuthenticated: boolean
   user: AdminUser | null
   loading: boolean

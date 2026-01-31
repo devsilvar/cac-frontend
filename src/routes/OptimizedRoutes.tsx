@@ -33,7 +33,7 @@ const CustomerDashboard = React.lazy(() => import('../pages/customer/CustomerDas
 const CustomerProfile = React.lazy(() => import('../pages/customer/CustomerProfile'))
 const CustomerUsage = React.lazy(() => import('../pages/customer/CustomerUsage'))
 const CustomerWallet = React.lazy(() => import('../pages/customer/CustomerWallet'))
-const CustomerApiKeys = React.lazy(() => import('../pages/customer/CustomerApiKeys'))
+const CustomerApiKeys = React.lazy(() => import('../pages/customer/CustomerKeys'))
 
 // ============================================
 // ADMIN ROUTES (Lazy Loaded)

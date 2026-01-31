@@ -16,7 +16,7 @@ interface ApiSuccess<T> {
 
 type ApiResponse<T> = ApiSuccess<T> | ApiError
 
-interface UseApi {
+export interface UseApi {
   loading: boolean
   error: string | null
   get: <T>(url: string) => Promise<ApiResponse<T>>

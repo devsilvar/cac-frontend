@@ -4,10 +4,13 @@ export interface CustomerUser {
   id: string
   email: string
   company?: string
+  fullName?: string | null
   phoneNumber?: string | null
-  plan: string
+  walletBalance?: number
   status: string
   verificationStatus?: string
+  createdAt?: string
+  plan?: 'basic' | 'pro' | 'enterprise'
 }
 
 export interface AuthResult {

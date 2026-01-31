@@ -3,7 +3,7 @@
  * Helper functions for optimizing React performance
  */
 
-import { useEffect, useRef, DependencyList } from 'react'
+import React, { useEffect, useRef, DependencyList } from 'react'
 
 /**
  * Throttle function calls
@@ -76,7 +76,7 @@ export function useRenderCount(componentName: string) {
  * Custom hook to detect why component re-rendered (dev only)
  */
 export function useWhyDidYouUpdate(componentName: string, props: Record<string, any>) {
-  const previousProps = useRef<Record<string, any>>()
+  const previousProps = useRef<Record<string, any> | undefined>(undefined)
 
   useEffect(() => {
     if (previousProps.current && import.meta.env.DEV) {
@@ -112,7 +112,7 @@ export function lazyWithDelay(
   return React.lazy(() =>
     Promise.all([
       importFunc(),
-      new Promise<void>((resolve) => setTimeout(() => resolve(), delay))
+      new Promise<void>((resolve) => setTimeout(resolve, delay))
     ]).then(([module]) => module)
   )
 }

@@ -33,7 +33,11 @@ interface NavItem {
   badge?: number
 }
 
-const AdminLayout: React.FC = () => {
+interface AdminLayoutProps {
+  children?: React.ReactNode
+}
+
+const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   const { user, logout } = useAdminAuth()
   const location = useLocation()
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -209,7 +213,7 @@ const AdminLayout: React.FC = () => {
         {/* Page content */}
         <main className="py-8">
           <div className="px-4 sm:px-6 lg:px-8">
-            <Outlet />
+            {children || <Outlet />}
           </div>
         </main>
       </div>

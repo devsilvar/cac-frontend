@@ -42,8 +42,8 @@ const AdminCustomersRefactored: React.FC = () => {
   const { data: customers, loading, error, refetch } = useQuery<Customer[]>(
     'admin-customers',
     async () => {
-      const response = await adminApi.get('/api/v1/admin/customers')
-      return response.data || []
+      const response = await adminApi.get<Customer[]>('/api/v1/admin/customers')
+      return response.success ? response.data : []
     },
     {
       refetchInterval: 30000 // Auto-refetch every 30 seconds

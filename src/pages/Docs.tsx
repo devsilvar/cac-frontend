@@ -106,13 +106,19 @@ const Docs: React.FC = () => {
                   Driver's License
                 </SubLink>
                 <SubLink href="#passport">
-                  Passport
+                  Passport Verification
+                </SubLink>
+                <SubLink href="#passport-face">
+                  Passport Face Match
                 </SubLink>
                 <SubLink href="#voters-card">
                   Voter's Card
                 </SubLink>
                 <SubLink href="#name-search">
                   CAC Name Search
+                </SubLink>
+                <SubLink href="#name-registration">
+                  Name Registration
                 </SubLink>
                 <SubLink href="#company-reg">
                   Company Registration
@@ -155,13 +161,19 @@ const Docs: React.FC = () => {
                       Driver's License
                     </SubLink>
                     <SubLink href="#passport" onClick={() => setIsMobileMenuOpen(false)}>
-                      Passport
+                      Passport Verification
+                    </SubLink>
+                    <SubLink href="#passport-face" onClick={() => setIsMobileMenuOpen(false)}>
+                      Passport Face Match
                     </SubLink>
                     <SubLink href="#voters-card" onClick={() => setIsMobileMenuOpen(false)}>
                       Voter's Card
                     </SubLink>
                     <SubLink href="#name-search" onClick={() => setIsMobileMenuOpen(false)}>
                       CAC Name Search
+                    </SubLink>
+                    <SubLink href="#name-registration" onClick={() => setIsMobileMenuOpen(false)}>
+                      Name Registration
                     </SubLink>
                     <SubLink href="#company-reg" onClick={() => setIsMobileMenuOpen(false)}>
                       Company Registration
@@ -248,38 +260,43 @@ const Docs: React.FC = () => {
               <EndpointCard
                 id="bvn"
                 method="POST"
-                endpoint="/api/v1/business/bvn-basic"
+                endpoint="/api/v1/business/identity/bvn-basic/{bvnNumber}"
                 title="BVN Basic Verification"
-                description="Verify a Bank Verification Number (BVN) with NIBSS"
-                price=""
+                description="Verify a Bank Verification Number (BVN) with NIBSS. Note: Requires special QoreID account permissions."
+                price="₦100"
               >
-                <h4 className="font-semibold text-gray-900 mt-4 mb-2">Request Body</h4>
+                <h4 className="font-semibold text-gray-900 mt-4 mb-2">Path Parameter</h4>
+                <ParameterTable>
+                  <ParameterRow name="bvnNumber" type="string" required description="11-digit BVN number (in URL path)" />
+                </ParameterTable>
+
+                <h4 className="font-semibold text-gray-900 mt-4 mb-2">Request Body (Optional)</h4>
                 <CodeBlock language="json">
 {`{
-  "bvn": "22234567890"
+  "firstName": "Test",
+  "lastname": "User"
 }`}
                 </CodeBlock>
 
-                <h4 className="font-semibold text-gray-900 mt-4 mb-2">Parameters</h4>
-                <ParameterTable>
-                  <ParameterRow name="bvn" type="string" required description="11-digit BVN number" />
-                </ParameterTable>
+                <h4 className="font-semibold text-gray-900 mt-4 mb-2">Example Request</h4>
+                <CodeBlock language="bash">
+{`curl -X POST https://your-domain.com/api/v1/business/identity/bvn-basic/22222222222 \\
+  -H "Authorization: Token ck_your_api_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{}'`}
+                </CodeBlock>
 
                 <h4 className="font-semibold text-gray-900 mt-4 mb-2">Success Response (200 OK)</h4>
                 <CodeBlock language="json">
 {`{
   "success": true,
   "data": {
-    "bvn": "22234567890",
+    "bvn": "22222222222",
     "firstName": "John",
     "lastName": "Doe",
     "dateOfBirth": "1990-05-15",
     "phoneNumber": "080********",
     "verified": true
-  },
-  "cost": {
-    "amount": 10000,
-    "formatted": "₦100.00"
   }
 }`}
                 </CodeBlock>
@@ -289,23 +306,30 @@ const Docs: React.FC = () => {
               <EndpointCard
                 id="drivers-license"
                 method="POST"
-                endpoint="/api/v1/business/drivers-license-verification"
+                endpoint="/api/v1/business/identity/drivers-license-verification"
                 title="Driver's License Verification"
-                description="Verify a Nigerian Driver's License with FRSC"
-                price=""
+                description="Verify a Nigerian Driver's License with face match using QoreID"
+                price="₦150"
               >
                 <h4 className="font-semibold text-gray-900 mt-4 mb-2">Request Body</h4>
                 <CodeBlock language="json">
 {`{
-  "license_number": "FKJ1234567890",
-  "date_of_birth": "1990-05-15"
+  "idNumber": "63184876213",
+  "firstName": "Dillion",
+  "lastname": "Bunch",
+  "phoneNumber": "08000000000",
+  "photoBase64": "/9j/4AAQSkZJRgABAQAAAQABAAD..."
 }`}
                 </CodeBlock>
 
                 <h4 className="font-semibold text-gray-900 mt-4 mb-2">Parameters</h4>
                 <ParameterTable>
-                  <ParameterRow name="license_number" type="string" required description="Driver's license number" />
-                  <ParameterRow name="date_of_birth" type="string" required description="Date of birth (YYYY-MM-DD)" />
+                  <ParameterRow name="idNumber" type="string" required description="Driver's license number" />
+                  <ParameterRow name="firstName" type="string" required description="First name (note capital N)" />
+                  <ParameterRow name="lastname" type="string" required description="Last name (lowercase n)" />
+                  <ParameterRow name="phoneNumber" type="string" required description="Phone number" />
+                  <ParameterRow name="photoBase64" type="string" required description="Base64-encoded photo OR use photoUrl" />
+                  <ParameterRow name="photoUrl" type="string" required={false} description="Public URL to photo (alternative to photoBase64)" />
                 </ParameterTable>
 
                 <h4 className="font-semibold text-gray-900 mt-4 mb-2">Success Response</h4>
@@ -313,41 +337,103 @@ const Docs: React.FC = () => {
 {`{
   "success": true,
   "data": {
-    "licenseNumber": "FKJ1234567890",
-    "firstName": "John",
-    "lastName": "Doe",
+    "licenseNumber": "63184876213",
+    "firstName": "Dillion",
+    "lastName": "Bunch",
     "dateOfBirth": "1990-05-15",
     "gender": "Male",
-    "issueDate": "2018-03-15",
-    "expiryDate": "2023-03-15",
     "status": "Valid",
+    "verified": true,
+    "faceMatch": {
+      "match": true,
+      "confidence": 95.5
+    }
+  }
+}`}
+                </CodeBlock>
+              </EndpointCard>
+
+              {/* Passport Verification (No Photo) */}
+              <EndpointCard
+                id="passport"
+                method="POST"
+                endpoint="/api/v1/business/identity/passport-verification/{passportNumber}"
+                title="Passport Verification"
+                description="Verify a Nigerian International Passport (without face match)"
+                price="₦150"
+              >
+                <h4 className="font-semibold text-gray-900 mt-4 mb-2">Path Parameter</h4>
+                <ParameterTable>
+                  <ParameterRow name="passportNumber" type="string" required description="Passport number (in URL path)" />
+                </ParameterTable>
+
+                <h4 className="font-semibold text-gray-900 mt-4 mb-2">Request Body</h4>
+                <CodeBlock language="json">
+{`{
+  "firstname": "John",
+  "lastname": "Doe"
+}`}
+                </CodeBlock>
+
+                <h4 className="font-semibold text-gray-900 mt-4 mb-2">Parameters</h4>
+                <ParameterTable>
+                  <ParameterRow name="firstname" type="string" required description="First name to match" />
+                  <ParameterRow name="lastname" type="string" required description="Last name to match" />
+                </ParameterTable>
+
+                <h4 className="font-semibold text-gray-900 mt-4 mb-2">Example Request</h4>
+                <CodeBlock language="bash">
+{`curl -X POST https://your-domain.com/api/v1/business/identity/passport-verification/A10000001 \\
+  -H "Authorization: Token ck_your_api_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{"firstname": "John", "lastname": "Doe"}'`}
+                </CodeBlock>
+
+                <h4 className="font-semibold text-gray-900 mt-4 mb-2">Success Response</h4>
+                <CodeBlock language="json">
+{`{
+  "success": true,
+  "data": {
+    "passport": {
+      "passportNumber": "A10000001",
+      "firstName": "John",
+      "lastName": "Doe",
+      "dateOfBirth": "1985-03-20",
+      "issuedDate": "2020-01-15",
+      "expiryDate": "2030-01-15"
+    },
     "verified": true
   }
 }`}
                 </CodeBlock>
               </EndpointCard>
 
-              {/* Passport Verification */}
+              {/* Passport Face Verification */}
               <EndpointCard
-                id="passport"
+                id="passport-face"
                 method="POST"
-                endpoint="/api/v1/business/passport-verification"
-                title="Passport Verification"
-                description="Verify a Nigerian International Passport with NIS"
-                price=""
+                endpoint="/api/v1/business/identity/passport-face-verification"
+                title="Passport Face Verification"
+                description="Verify a Nigerian Passport with face match"
+                price="₦200"
               >
                 <h4 className="font-semibold text-gray-900 mt-4 mb-2">Request Body</h4>
                 <CodeBlock language="json">
 {`{
-  "passport_number": "A50123456",
-  "last_name": "Doe"
+  "idNumber": "A10000001",
+  "firstName": "Bunch",
+  "lastname": "Dillon",
+  "photoUrl": "https://res.cloudinary.com/demo/image/upload/sample.jpg"
 }`}
                 </CodeBlock>
 
                 <h4 className="font-semibold text-gray-900 mt-4 mb-2">Parameters</h4>
                 <ParameterTable>
-                  <ParameterRow name="passport_number" type="string" required description="9-character passport number" />
-                  <ParameterRow name="last_name" type="string" required description="Last name as on passport" />
+                  <ParameterRow name="idNumber" type="string" required description="Passport number (note: field is idNumber, not passportNumber)" />
+                  <ParameterRow name="firstName" type="string" required description="First name (note capital N)" />
+                  <ParameterRow name="lastname" type="string" required description="Last name (lowercase n)" />
+                  <ParameterRow name="photoBase64" type="string" required description="Base64-encoded photo OR use photoUrl" />
+                  <ParameterRow name="photoUrl" type="string" required={false} description="Public URL to photo (alternative to photoBase64)" />
                 </ParameterTable>
 
                 <h4 className="font-semibold text-gray-900 mt-4 mb-2">Success Response</h4>
@@ -355,13 +441,15 @@ const Docs: React.FC = () => {
 {`{
   "success": true,
   "data": {
-    "passportNumber": "A50123456",
-    "firstName": "John",
-    "lastName": "Doe",
-    "dateOfBirth": "1990-05-15",
-    "nationality": "Nigerian",
-    "issueDate": "2020-01-10",
-    "expiryDate": "2025-01-10",
+    "passport": {
+      "passportNumber": "A10000001",
+      "firstName": "Bunch",
+      "lastName": "Dillon"
+    },
+    "faceMatch": {
+      "match": true,
+      "confidence": 98.2
+    },
     "verified": true
   }
 }`}
@@ -372,33 +460,48 @@ const Docs: React.FC = () => {
               <EndpointCard
                 id="voters-card"
                 method="POST"
-                endpoint="/api/v1/business/voters-card-verification"
+                endpoint="/api/v1/business/identity/voters-card-verification/{vin}"
                 title="Voter's Card Verification"
                 description="Verify a Nigerian Permanent Voter's Card (PVC) with INEC"
-                price=""
+                price="₦150"
               >
+                <h4 className="font-semibold text-gray-900 mt-4 mb-2">Path Parameter</h4>
+                <ParameterTable>
+                  <ParameterRow name="vin" type="string" required description="Voter Identification Number (in URL path)" />
+                </ParameterTable>
+
                 <h4 className="font-semibold text-gray-900 mt-4 mb-2">Request Body</h4>
                 <CodeBlock language="json">
 {`{
-  "vin": "90F5B123456789012",
-  "last_name": "Doe"
+  "firstname": "DOE",
+  "lastname": "JOHN",
+  "dob": "2022-04-22"
 }`}
                 </CodeBlock>
 
                 <h4 className="font-semibold text-gray-900 mt-4 mb-2">Parameters</h4>
                 <ParameterTable>
-                  <ParameterRow name="vin" type="string" required description="19-character Voter Identification Number" />
-                  <ParameterRow name="last_name" type="string" required description="Last name as registered" />
+                  <ParameterRow name="firstname" type="string" required description="First name (UPPERCASE recommended)" />
+                  <ParameterRow name="lastname" type="string" required description="Last name (UPPERCASE recommended)" />
+                  <ParameterRow name="dob" type="string" required={false} description="Date of birth (YYYY-MM-DD). Note: field is 'dob' not 'dateOfBirth'" />
                 </ParameterTable>
+
+                <h4 className="font-semibold text-gray-900 mt-4 mb-2">Example Request</h4>
+                <CodeBlock language="bash">
+{`curl -X POST https://your-domain.com/api/v1/business/identity/voters-card-verification/90F5DB8799296145513 \\
+  -H "Authorization: Token ck_your_api_key" \\
+  -H "Content-Type: application/json" \\
+  -d '{"firstname": "DOE", "lastname": "JOHN", "dob": "2022-04-22"}'`}
+                </CodeBlock>
 
                 <h4 className="font-semibold text-gray-900 mt-4 mb-2">Success Response</h4>
                 <CodeBlock language="json">
 {`{
   "success": true,
   "data": {
-    "vin": "90F5B123456789012",
-    "firstName": "John",
-    "lastName": "Doe",
+    "vin": "90F5DB8799296145513",
+    "firstName": "DOE",
+    "lastName": "JOHN",
     "state": "Lagos",
     "lga": "Ikeja",
     "pollingUnit": "Ikeja PU 001",
@@ -415,7 +518,7 @@ const Docs: React.FC = () => {
                 endpoint="/api/v1/business/name-search"
                 title="CAC Name Search"
                 description="Search for business name availability in CAC registry"
-                price=""
+                price="₦100"
               >
                 <h4 className="font-semibold text-gray-900 mt-4 mb-2">Request Body</h4>
                 <CodeBlock language="json">
@@ -447,18 +550,58 @@ const Docs: React.FC = () => {
                 </CodeBlock>
               </EndpointCard>
 
+              {/* Name Registration */}
+              <EndpointCard
+                id="name-registration"
+                method="POST"
+                endpoint="/api/v1/business/name-registration"
+                title="Business Name Registration"
+                description="Register a Business Name (BN) or Incorporated Trustee (IT) with CAC"
+                price="₦40,000"
+              >
+                <h4 className="font-semibold text-gray-900 mt-4 mb-2">Request Body</h4>
+                <CodeBlock language="json">
+{`{
+  "business_type": "BN",
+  "business_name": "Tech Solutions",
+  "line_of_business": "Information Technology Services",
+  "ref": "REF-2026-001"
+}`}
+                </CodeBlock>
+
+                <h4 className="font-semibold text-gray-900 mt-4 mb-2">Parameters</h4>
+                <ParameterTable>
+                  <ParameterRow name="business_type" type="string" required description="'BN' for Business Name or 'IT' for Incorporated Trustee" />
+                  <ParameterRow name="business_name" type="string" required description="Business name to register (must pass name search first)" />
+                  <ParameterRow name="line_of_business" type="string" required description="Business activity description" />
+                  <ParameterRow name="ref" type="string" required description="Your unique reference ID for tracking" />
+                </ParameterTable>
+
+                <h4 className="font-semibold text-gray-900 mt-4 mb-2">Success Response</h4>
+                <CodeBlock language="json">
+{`{
+  "success": true,
+  "data": {
+    "status": "submitted",
+    "referenceId": "REF-2026-001",
+    "message": "Business name registration submitted successfully"
+  }
+}`}
+                </CodeBlock>
+              </EndpointCard>
+
               {/* Company Registration */}
               <EndpointCard
                 id="company-reg"
                 method="POST"
                 endpoint="/api/v1/company-registration"
                 title="Company Registration"
-                description="Submit company registration to CAC"
-                price=""
+                description="Register a Limited Company (RC) with CAC"
+                price="₦90,000"
               >
                 <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
                   <p className="text-sm text-yellow-800">
-                    ⚠️ <strong>Complex Endpoint:</strong> This requires many fields. 
+                    ⚠️ <strong>Complex Endpoint:</strong> This requires many fields including witness information.
                     Contact support for full integration guide.
                   </p>
                 </div>
@@ -466,13 +609,13 @@ const Docs: React.FC = () => {
                 <h4 className="font-semibold text-gray-900 mt-4 mb-2">Key Required Fields</h4>
                 <CodeBlock language="json">
 {`{
-  "ref": "REF123456789",
+  "company_name": "Tech Solutions Nigeria Limited",
+  "line_of_business": "Information Technology Services",
+  "ref": "COMP-2026-001",
   "customer_name": "John Doe",
   "customer_email": "john@example.com",
   "business_category": "32",
   "classification_type": "LTD",
-  "business_name": "Tech Solutions Nigeria Limited",
-  "business_line": "IT Services",
   "registrationType": "company",
   "witnesses": [
     {
@@ -483,9 +626,16 @@ const Docs: React.FC = () => {
       "email": "jane@example.com"
     }
   ]
-  // ... more fields required
 }`}
                 </CodeBlock>
+
+                <h4 className="font-semibold text-gray-900 mt-4 mb-2">Parameters</h4>
+                <ParameterTable>
+                  <ParameterRow name="company_name" type="string" required description="Company name (must include Limited/Ltd)" />
+                  <ParameterRow name="line_of_business" type="string" required description="Primary business activity" />
+                  <ParameterRow name="ref" type="string" required description="Your unique reference for tracking" />
+                  <ParameterRow name="witnesses" type="array" required description="Array of witness information (see above)" />
+                </ParameterTable>
               </EndpointCard>
             </Section>
 

@@ -95,8 +95,8 @@ export const CustomerDataProvider: React.FC<{ children: ReactNode }> = ({ childr
   } = useQuery<CustomerProfile>(
     'customer-profile',
     async () => {
-      const response = await api.get('/api/v1/customer/profile')
-      return response.data || response
+      const response = await api.get<CustomerProfile>('/api/v1/customer/profile')
+      return (response as any).success ? (response as any).data : null as any
     }
   )
 
@@ -109,8 +109,8 @@ export const CustomerDataProvider: React.FC<{ children: ReactNode }> = ({ childr
   } = useQuery<WalletData>(
     'customer-wallet',
     async () => {
-      const response = await api.get('/api/v1/customer/wallet')
-      return response.data || response
+      const response = await api.get<WalletData>('/api/v1/customer/wallet')
+      return (response as any).success ? (response as any).data : null as any
     }
   )
 
@@ -123,8 +123,8 @@ export const CustomerDataProvider: React.FC<{ children: ReactNode }> = ({ childr
   } = useQuery<UsageData>(
     'customer-usage',
     async () => {
-      const response = await api.get('/api/v1/customer/usage')
-      return response.data?.usage || response.usage || null
+      const response = await api.get<{ usage: UsageData }>('/api/v1/customer/usage')
+      return (response as any).success ? ((response as any).data?.usage || (response as any).data as any) : null as any
     }
   )
 
@@ -137,8 +137,8 @@ export const CustomerDataProvider: React.FC<{ children: ReactNode }> = ({ childr
   } = useQuery<ApiKey[]>(
     'customer-api-keys',
     async () => {
-      const response = await api.get('/api/v1/customer/api-keys')
-      return response.data || response
+      const response = await api.get<ApiKey[]>('/api/v1/customer/api-keys')
+      return (response as any).success ? (response as any).data : null as any
     }
   )
 

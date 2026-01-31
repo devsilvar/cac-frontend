@@ -237,7 +237,7 @@ const PerformanceOptimizedPage: React.FC = () => {
       </div>
 
       {/* Dev Only: Render Counter */}
-      {process.env.NODE_ENV === 'development' && (
+      {import.meta.env.DEV && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
           <p className="text-yellow-900 text-sm">
             <strong>Dev Mode:</strong> Check console for render counts and memoization logs

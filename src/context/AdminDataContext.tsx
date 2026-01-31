@@ -74,8 +74,8 @@ export const AdminDataProvider: React.FC<{ children: ReactNode }> = ({ children 
   } = useQuery<DashboardStats>(
     'admin-dashboard-stats',
     async () => {
-      const response = await adminApi.get('/api/v1/admin/dashboard/stats')
-      return response.data || response
+      const response = await adminApi.get<DashboardStats>('/api/v1/admin/dashboard/stats')
+      return response.success ? response.data : null as any
     },
     {
       refetchInterval: 60000 // Refresh every minute
@@ -91,8 +91,8 @@ export const AdminDataProvider: React.FC<{ children: ReactNode }> = ({ children 
   } = useQuery<Customer[]>(
     'admin-customers',
     async () => {
-      const response = await adminApi.get('/api/v1/admin/customers')
-      return response.data || response
+      const response = await adminApi.get<Customer[]>('/api/v1/admin/customers')
+      return response.success ? response.data : null as any
     }
   )
 
@@ -105,8 +105,8 @@ export const AdminDataProvider: React.FC<{ children: ReactNode }> = ({ children 
   } = useQuery<SystemMetrics>(
     'admin-system-metrics',
     async () => {
-      const response = await adminApi.get('/api/v1/admin/system/metrics')
-      return response.data || response
+      const response = await adminApi.get<SystemMetrics>('/api/v1/admin/system/metrics')
+      return response.success ? response.data : null as any
     },
     {
       refetchInterval: 30000 // Refresh every 30 seconds
