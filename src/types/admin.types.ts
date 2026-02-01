@@ -10,11 +10,14 @@
 export interface Admin {
   id: string
   email: string
+  fullName?: string
   role: 'super_admin' | 'admin' | 'support'
   permissions: string[]
+  status: 'active' | 'suspended' | 'inactive'
   createdAt: string
   updatedAt?: string
   lastLoginAt?: string
+  createdBy?: string
 }
 
 export interface AdminProfile {

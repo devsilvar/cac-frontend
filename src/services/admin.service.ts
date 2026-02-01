@@ -366,9 +366,42 @@ export const systemService = {
    * Create new admin
    */
   async createAdmin(data: CreateAdminRequest): Promise<ApiResponse<{ admin: Admin; message: string }> | ApiError> {
-    return apiRequest<{ admin: Admin; message: string }>('/admin/admins', {
+    return apiRequest<{ admin: Admin; message: string }>('/admin/management', {
       method: 'POST',
       body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * Get all admins (Super Admin only)
+   */
+  async listAdmins(): Promise<ApiResponse<{ admins: Admin[] }> | ApiError> {
+    return apiRequest<{ admins: Admin[] }>('/admin/management')
+  },
+
+  /**
+   * Get specific admin details
+   */
+  async getAdmin(adminId: string): Promise<ApiResponse<{ admin: Admin }> | ApiError> {
+    return apiRequest<{ admin: Admin }>(`/admin/management/${adminId}`)
+  },
+
+  /**
+   * Update admin details
+   */
+  async updateAdmin(adminId: string, data: UpdateAdminProfileRequest): Promise<ApiResponse<{ admin: Admin; message: string }> | ApiError> {
+    return apiRequest<{ admin: Admin; message: string }>(`/admin/management/${adminId}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * Delete admin
+   */
+  async deleteAdmin(adminId: string): Promise<ApiResponse<{ message: string }> | ApiError> {
+    return apiRequest<{ message: string }>(`/admin/management/${adminId}`, {
+      method: 'DELETE',
     })
   },
 

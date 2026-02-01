@@ -63,7 +63,7 @@ const Docs: React.FC = () => {
                 )}
               </button>
               <div>
-                <Link to="/" className="text-sm text-blue-600 hover:text-blue-700">
+                <Link to="/" className="text-sm text-[#473893] hover:text-[#3a2e7a]">
                   ← Back
                 </Link>
                 <h1 className="text-2xl font-bold text-gray-900 mt-1">API Documentation</h1>
@@ -71,7 +71,7 @@ const Docs: React.FC = () => {
             </div>
             <Link
               to="/customer/login"
-              className="hidden sm:inline-flex items-center px-4 py-2 rounded text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
+              className="hidden sm:inline-flex items-center px-4 py-2 rounded text-sm font-medium text-white bg-[#473893] hover:bg-[#3a2e7a]"
             >
               Get API Key
             </Link>
@@ -206,7 +206,7 @@ const Docs: React.FC = () => {
 
                 <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
                   <FeatureCard
-                    icon={<ShieldCheckIcon className="h-8 w-8 text-blue-600" />}
+                    icon={<ShieldCheckIcon className="h-8 w-8 text-[#473893]" />}
                     title="Secure"
                     description="API key authentication with encrypted connections"
                   />
@@ -702,7 +702,7 @@ const Docs: React.FC = () => {
                   <h4 className="font-semibold text-gray-900 mb-3">Need Help?</h4>
                   <div className="space-y-2 text-sm text-gray-700">
                     <p><strong>Email:</strong> support@your-domain.com</p>
-                    <p><strong>Dashboard:</strong> <Link to="/customer/dashboard" className="text-blue-600 hover:underline">Customer Portal</Link></p>
+                    <p><strong>Dashboard:</strong> <Link to="/customer/dashboard" className="text-[#473893] hover:underline">Customer Portal</Link></p>
                     <p>View your API usage and transaction history in your dashboard</p>
                   </div>
                 </div>
@@ -743,8 +743,7 @@ const SidebarLink: React.FC<{ href: string; icon: any; children: React.ReactNode
 const SubLink: React.FC<{ href: string; onClick?: () => void; children: React.ReactNode }> = ({ href, onClick, children }) => (
   <a
     href={href}
-    onClick={onClick}
-    className="block px-3 py-1.5 text-sm text-gray-600 hover:text-blue-600 hover:bg-gray-50 rounded transition"
+    className="block px-3 py-1.5 text-sm text-gray-600 hover:text-[#473893] hover:bg-gray-50 rounded transition"
   >
     {children}
   </a>
@@ -815,7 +814,7 @@ const EndpointCard: React.FC<{
       <p className="text-gray-600 text-sm">{description}</p>
     </div>
     <div className="flex flex-wrap items-center gap-3 mb-6 p-3 bg-gray-50 rounded border border-gray-200">
-      <span className="bg-blue-600 text-white px-3 py-1 rounded text-xs font-semibold uppercase">
+      <span className="bg-[#473893] text-white px-3 py-1 rounded text-xs font-semibold uppercase">
         {method}
       </span>
       <code className="bg-white px-3 py-1 rounded text-sm font-mono text-gray-800 border border-gray-200 flex-1 min-w-0 overflow-x-auto">
