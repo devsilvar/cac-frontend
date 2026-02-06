@@ -56,8 +56,16 @@ const CustomerLogin: React.FC = () => {
   return (
     <SiteLayout>
       <div className="max-w-md mx-auto py-16">
-        <h1 className="text-3xl font-bold text-gray-900 mb-6">Customer Login</h1>
-        <p className="text-gray-600 mb-6">Log in to your customer dashboard</p>
+        {/* WallX Logo */}
+        <div className="flex justify-center mb-8">
+          <img 
+            src="/logo-wallx.png" 
+            alt="WallX Logo" 
+            className="h-16 w-auto"
+          />
+        </div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-6 text-center">Customer Login</h1>
+        <p className="text-gray-600 mb-6 text-center">Log in to your customer dashboard</p>
 
         <form onSubmit={handleSubmit} className="space-y-4 bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
           {showSignupNotice && (
@@ -82,7 +90,7 @@ const CustomerLogin: React.FC = () => {
                 if (fieldErrors.email) setFieldErrors((p) => ({ ...p, email: undefined }))
               }}
               onBlur={validate}
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
                 fieldErrors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
               }`}
               placeholder="you@example.com"
@@ -108,7 +116,7 @@ const CustomerLogin: React.FC = () => {
                   if (fieldErrors.password) setFieldErrors((p) => ({ ...p, password: undefined }))
                 }}
                 onBlur={validate}
-                className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent ${
                   fieldErrors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'
                 }`}
                 placeholder="••••••••"
@@ -132,17 +140,17 @@ const CustomerLogin: React.FC = () => {
             )}
           </div>
 
-          <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50">
+          <button type="submit" disabled={loading} className="w-full bg-primary-600 text-white py-2 rounded-lg hover:bg-primary-700 disabled:opacity-50 font-medium">
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
 
           <div className="flex items-center justify-between text-sm text-gray-600">
-            <Link to="/customer/forgot-password" className="text-blue-600 hover:text-blue-700 font-medium">
+            <Link to="/customer/forgot-password" className="text-primary-600 hover:text-primary-700 font-medium">
               Forgot password?
             </Link>
             <span>
               Don’t have an account?{' '}
-              <Link to="/customer/signup" className="text-blue-600 hover:text-blue-700 font-medium">
+              <Link to="/customer/signup" className="text-primary-600 hover:text-primary-700 font-medium">
                 Create one
               </Link>
             </span>

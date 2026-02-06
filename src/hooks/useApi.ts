@@ -48,7 +48,7 @@ export const useApi = (): UseApi => {
         defaultHeaders['Authorization'] = `Bearer ${token}`
       }
 
-      const response = await fetch(`http://localhost:3000/api/v1${url}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1${url}`, {
         ...options,
         headers: {
           ...defaultHeaders,

@@ -71,6 +71,14 @@ const CustomerSignup: React.FC = () => {
     <SiteLayout>
       <div className="max-w-md mx-auto py-16 px-4">
         <div className="text-center mb-8">
+          {/* WallX Logo */}
+          <div className="flex justify-center mb-6">
+            <img 
+              src="/logo-wallx.png" 
+              alt="WallX Logo" 
+              className="h-16 w-auto"
+            />
+          </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h1>
           <p className="text-gray-600">Get started with our business verification services</p>
         </div>
@@ -98,7 +106,7 @@ const CustomerSignup: React.FC = () => {
                     })
                   }} 
                   onBlur={validateForm}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
                     fieldErrors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
                   }`} 
                   placeholder="you@example.com" 
@@ -122,7 +130,7 @@ const CustomerSignup: React.FC = () => {
                     })
                   }} 
                   onBlur={validateForm}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all ${
                     fieldErrors.fullName ? 'border-red-300 bg-red-50' : 'border-gray-300'
                   }`} 
                   placeholder="John Doe" 
@@ -186,7 +194,7 @@ const CustomerSignup: React.FC = () => {
               <button 
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="w-full bg-primary-600 text-white py-3 px-4 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium focus:ring-2 focus:ring-primary-500 focus:ring-offset-2"
               >
                 {loading ? (
                   <span className="flex items-center justify-center">
@@ -204,7 +212,7 @@ const CustomerSignup: React.FC = () => {
 
 
           <div className="text-center text-sm text-gray-600 pt-4 border-t border-gray-100">
-            Already have an account? <Link to="/customer/login" className="text-blue-600 hover:text-blue-700 font-medium">Sign in</Link>
+            Already have an account? <Link to="/customer/login" className="text-primary-600 hover:text-primary-700 font-medium">Sign in</Link>
           </div>
         </form>
       </div>

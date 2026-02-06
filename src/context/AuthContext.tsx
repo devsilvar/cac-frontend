@@ -42,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<boolean> => {
     // Don't use the global loading state for login - it's only for initial auth check
     try {
-      const response = await fetch('http://localhost:3000/api/v1/admin/auth/login', {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/v1/admin/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })

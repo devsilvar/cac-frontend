@@ -33,7 +33,7 @@ import type {
 
 const API_BASE_URL = (import.meta as any).env?.VITE_API_BASE_URL 
   ? `${(import.meta as any).env.VITE_API_BASE_URL}/api/v1` 
-  : 'http://localhost:3000/api/v1'
+  : import.meta.env.VITE_API_BASE_URL + '/api/v1' || 'http://localhost:3000/api/v1'
 
 // ============================================================================
 // HELPER FUNCTIONS
